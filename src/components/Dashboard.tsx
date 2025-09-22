@@ -21,16 +21,43 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Form submitted successfully! Welcome to CloakPay!");
-    setFormData({
-      field1: "",
-      field2: "",
-      field3: "",
-      field4: "",
-    });
-    onClose(); // Close the modal after successful submission
+    
+    try {
+     
+      const merchantResponse = await fetch('http://localhost:4000/merchants', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          businessName: formData.field1,
+          contactInformation: formData.field3,
+          businessAddress: formData.field2,
+          receivingAddress: formData.field4,
+        }),
+      });
+
+      if (!merchantResponse.ok) {
+        throw new Error('Merchant creation failed');
+      }
+
+      const merchantData = await merchantResponse.json();
+      console.log("Merchants Data", merchantData)
+      alert("Form submitted successfully! Welcome to CloakPay!");
+      
+      setFormData({
+        field1: "",
+        field2: "",
+        field3: "",
+        field4: "",
+      });
+      onClose(); // Close the modal after successful submission
+    } catch (error) {
+      console.error('Error:', error);
+      alert("Error submitting form. Please try again.");
+    }
   };
 
   if (!isOpen) return null;
