@@ -7,12 +7,30 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
-  const [formData, setFormData] = useState({
+
+  const [formData, setFormData] = useState<{
+    field1: string;
+    field2: string;
+    field3: string;
+    field4: string;
+    image: File | null;
+  }>({
     field1: "",
     field2: "",
     field3: "",
     field4: "",
+    image: null,
   });
+
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setFormData({ ...formData, image: file });
+      setPreview(URL.createObjectURL(file)); // <-- generate preview
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -23,39 +41,49 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    try {
-     
-      const merchantResponse = await fetch('http://localhost:4000/merchants', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          businessName: formData.field1,
-          contactInformation: formData.field3,
-          businessAddress: formData.field2,
-          receivingAddress: formData.field4,
-        }),
-      });
 
-      if (!merchantResponse.ok) {
-        throw new Error('Merchant creation failed');
+    try {
+      // Prepare FormData
+      const data = new FormData();
+      data.append("businessName", formData.field1);
+      data.append("businessAddress", formData.field2);
+      data.append("contactInformation", formData.field3);
+      data.append("receivingAddress", formData.field4);
+
+      console.log('data', data);
+      console.log('form data', formData)
+
+
+      if (formData.image) {
+        data.append("file", formData.image); // Key must match NestJS FileInterceptor
       }
 
-      const merchantData = await merchantResponse.json();
-      console.log("Merchants Data", merchantData)
+      // Send to backend
+      const response = await fetch("http://localhost:4000/merchants", {
+        method: "POST",
+        body: data,
+      });
+
+      if (!response.ok) {
+        throw new Error("Merchant creation failed");
+      }
+
+      const result = await response.json();
+      console.log("Response Data:", result);
+
       alert("Form submitted successfully! Welcome to CloakPay!");
-      
+
+      // Reset form
       setFormData({
         field1: "",
         field2: "",
         field3: "",
         field4: "",
+        image: null,
       });
-      onClose(); // Close the modal after successful submission
+      onClose(); // Close modal if applicable
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
       alert("Error submitting form. Please try again.");
     }
   };
@@ -111,6 +139,21 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
             />
           </div>
 
+
+
+          <div className="input-group">
+            <label htmlFor="imageUpload">Upload Image:</label>
+            <input
+              id="imageUpload"
+              name="image"
+              type="file"
+              placeholder="Field1"
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+          </div>
+
+    
           <div className="actions">
             <button type="button" className="cancel" onClick={onClose}>
               Cancel
