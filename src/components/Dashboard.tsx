@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./Dashboard.css";
+import Loader from "../common/Loader/Loader";
 
 interface DashboardProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
   });
 
   const [preview, setPreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true); 
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -41,6 +43,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+     setLoading(true); 
 
     try {
       // Prepare FormData
@@ -82,8 +85,10 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
         image: null,
       });
       onClose(); // Close modal if applicable
+      setLoading(false);
     } catch (error) {
       console.error("Error:", error);
+      setLoading(false);
       alert("Error submitting form. Please try again.");
     }
   };
@@ -158,8 +163,11 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
             <button type="button" className="cancel" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="submit">
+            {/* <button type="submit" className="submit">
               Submit
+            </button> */}
+             <button type="submit" className="submit" disabled={loading}>
+              {loading ? <Loader /> : "Submit"}
             </button>
           </div>
         </form>

@@ -150,3 +150,7 @@
     opacity: 1;
   }
 }
+
+.submit {
+  min-width: 100px;
+}
