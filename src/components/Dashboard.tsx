@@ -24,7 +24,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
   });
 
   const [preview, setPreview] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(false); 
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
