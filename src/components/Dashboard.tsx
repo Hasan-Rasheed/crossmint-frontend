@@ -14,12 +14,14 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
     field2: string;
     field3: string;
     field4: string;
+    field5: string;
     image: File | null;
   }>({
     field1: "",
     field2: "",
     field3: "",
     field4: "",
+    field5: "",
     image: null,
   });
 
@@ -45,6 +47,8 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
     e.preventDefault();
      setLoading(true); 
 
+     console.log('form data', formData)
+
     try {
       // Prepare FormData
       const data = new FormData();
@@ -52,6 +56,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
       data.append("businessAddress", formData.field2);
       data.append("contactInformation", formData.field3);
       data.append("receivingAddress", formData.field4);
+      data.append("storeUrl", formData.field5);
 
       console.log('data', data);
       console.log('form data', formData)
@@ -82,6 +87,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
         field2: "",
         field3: "",
         field4: "",
+        field5: "",
         image: null,
       });
       onClose(); // Close modal if applicable
@@ -139,6 +145,17 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
               name="field4"
               placeholder="Receiving address (Arbitrum)"
               value={formData.field4}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="input-group">
+            <input
+              type="text"
+              name="field5"
+              placeholder="Shop url"
+              value={formData.field5}
               onChange={handleChange}
               required
             />
