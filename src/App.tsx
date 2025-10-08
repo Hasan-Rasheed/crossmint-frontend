@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import './App.css'
 import Dashboard from './components/Dashboard'
 import LandingPage from './components/LandingPage'
+import AdminPanel from './components/Admin/AdminPanel'
 
 function App() {
   const [showMerchantForm, setShowMerchantForm] = useState(false)
@@ -15,10 +17,20 @@ function App() {
   }
 
   return (
-    <>
-      <LandingPage onSignupClick={handleSignupClick} />
-      <Dashboard isOpen={showMerchantForm} onClose={handleCloseMerchantForm} />
-    </>
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <>
+              <LandingPage onSignupClick={handleSignupClick} />
+              <Dashboard isOpen={showMerchantForm} onClose={handleCloseMerchantForm} />
+            </>
+          }
+        />
+        <Route path="/admin" element={<AdminPanel />} />
+      </Routes>
+    </Router>
   )
 }
 

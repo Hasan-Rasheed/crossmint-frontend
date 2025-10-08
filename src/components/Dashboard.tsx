@@ -25,14 +25,12 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
     image: null,
   });
 
-  const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false); 
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setFormData({ ...formData, image: file });
-      setPreview(URL.createObjectURL(file)); // <-- generate preview
     }
   };
 
