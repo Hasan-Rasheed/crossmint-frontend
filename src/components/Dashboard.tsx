@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./Dashboard.css";
 import Loader from "../common/Loader/Loader";
+import { API_ENDPOINTS } from "../config/api";
 
 interface DashboardProps {
   isOpen: boolean;
@@ -45,7 +46,6 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
     e.preventDefault();
      setLoading(true); 
 
-     console.log('form data', formData)
 
     try {
       // Prepare FormData
@@ -56,16 +56,12 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
       data.append("receivingAddress", formData.field4);
       data.append("storeUrl", formData.field5);
 
-      console.log('data', data);
-      console.log('form data', formData)
-
-
       if (formData.image) {
         data.append("file", formData.image); // Key must match NestJS FileInterceptor
       }
 
       // Send to backend
-      const response = await fetch("http://localhost:4000/merchants", {
+      const response = await fetch(API_ENDPOINTS.MERCHANTS_CREATE, {
         method: "POST",
         body: data,
       });

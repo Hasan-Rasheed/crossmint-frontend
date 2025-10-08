@@ -16,6 +16,7 @@
   max-width: 300px;
   max-height: 100%;
   height: 80vh;
+  position: relative;
 }
 
 .admin-header {
@@ -124,4 +125,64 @@
   padding: 0.75rem;
   background: #f1f5f9;
   border-radius: 6px;
+}
+
+.success-message {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-align: center;
+  border: 1px solid #a7f3d0;
+  margin-bottom: 1rem;
+}
+
+.disabled-input {
+  background: #e2e8f0 !important;
+  cursor: not-allowed;
+  color: #64748b;
+}
+
+.otp-input {
+  text-align: center;
+  font-size: 1.5rem;
+  letter-spacing: 0.5rem;
+  font-weight: 600;
+}
+
+.back-arrow-btn {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  background: transparent;
+  border: none;
+  color: #6366f1;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.back-arrow-btn:hover {
+  background: rgba(99, 102, 241, 0.1);
+  transform: translateX(-2px);
+}
+
+.back-arrow-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.admin-login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
