@@ -46,7 +46,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
           {error && <div className="error-message">{error}</div>}
           
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email" className='field-label'>Email</label>
             <input
               type="email"
               id="email"
@@ -59,7 +59,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password" className='field-label'>Password</label>
             <input
               type="password"
               id="password"
@@ -76,11 +76,11 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
           </button>
         </form>
         
-        <div className="admin-footer">
+        {/* <div className="admin-footer">
           <p className="admin-note">
             Demo credentials: admin@cloakpay.com / admin123
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );
