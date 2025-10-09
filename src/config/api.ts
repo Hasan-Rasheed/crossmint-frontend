@@ -1,4 +1,5 @@
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
+export const ADMIN_SECRET_KEY = import.meta.env.VITE_ADMIN_SECRET_KEY || '';
 
 /**
  * API Endpoints
@@ -9,9 +10,12 @@ export const API_ENDPOINTS = {
   ADMIN_VERIFY_OTP: `${API_BASE_URL}/admin/verify-otp`,
   
   // Admin Dashboard
+  ADMIN_ANALYTICS: `${API_BASE_URL}/admin/dashboard/analytics`,
   ADMIN_MERCHANTS: `${API_BASE_URL}/admin/dashboard/merchants`,
   ADMIN_MERCHANT_BY_ID: (id: string) => `${API_BASE_URL}/admin/dashboard/merchants/${id}`,
   ADMIN_LIST: `${API_BASE_URL}/admin/list`,
+  ADMIN_CREATE: `${API_BASE_URL}/admin/create`,
+  ADMIN_ACTIVATE: (id: number) => `${API_BASE_URL}/admin/reactivate/${id}`,
   ADMIN_DEACTIVATE: (id: number) => `${API_BASE_URL}/admin/deactivate/${id}`,
   
   // Merchant

@@ -186,3 +186,36 @@
   cursor: not-allowed;
   transform: none;
 }
+
+.resend-container {
+  text-align: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.resend-text {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.resend-link {
+  background: none;
+  border: none;
+  color: #6366f1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.resend-link:hover {
+  color: #4f46e5;
+}
+
+.resend-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

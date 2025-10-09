@@ -89,6 +89,33 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
     setSuccessMessage('');
   };
 
+  const handleResendOtp = async () => {
+    setError('');
+    setSuccessMessage('');
+    setLoading(true);
+
+    try {
+      const response = await fetch(API_ENDPOINTS.ADMIN_REQUEST_OTP, {
+        method: 'POST',
+        headers: createHeaders(),
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSuccessMessage('OTP resent successfully to your email');
+      } else {
+        setError(data.message || 'Failed to resend OTP. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error resending OTP:', error);
+      setError('Network error. Please check your connection and try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="admin-login-container">
       <div className="admin-login-box">
@@ -107,11 +134,11 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
         <div className="admin-header">
           <span className="admin-logo">🔒</span>
           <h1>CloakPay Admin</h1>
-          <p>
+          {/* <p>
             {step === 'email' 
               ? 'Enter your email to receive OTP' 
               : 'Enter the OTP sent to your email'}
-          </p>
+          </p> */}
         </div>
         
         {/* Email Step */}
@@ -120,7 +147,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
             {error && <div className="error-message">{error}</div>}
             
             <div className="form-group">
-              <label htmlFor="email">Admin Email</label>
+              <label htmlFor="email" className='field-label'>Admin Email</label>
               <input
                 type="email"
                 id="email"
@@ -142,7 +169,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
         {/* OTP Step */}
         {step === 'otp' && (
           <form onSubmit={handleOtpSubmit} className="admin-login-form">
-            {successMessage && <div className="success-message">{successMessage}</div>}
+            {successMessage && !error && <div className="success-message">{successMessage}</div>}
             {error && <div className="error-message">{error}</div>}
             
             {/* <div className="form-group">
@@ -175,16 +202,28 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
             <button type="submit" className="admin-login-btn" disabled={loading || otp.length !== 6}>
               {loading ? 'Verifying...' : 'Verify OTP'}
             </button>
+
+            <div className="resend-container">
+              <span className="resend-text">Didn't receive the code? </span>
+              <button 
+                type="button" 
+                className="resend-link" 
+                onClick={handleResendOtp}
+                disabled={loading}
+              >
+                Resend OTP
+              </button>
+            </div>
           </form>
         )}
         
-        <div className="admin-footer">
+        {/* <div className="admin-footer">
           <p className="admin-note">
             {step === 'email' 
               ? 'You will receive a 6-digit OTP on your registered email' 
               : 'Check your email for the OTP code'}
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );
