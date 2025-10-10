@@ -27,21 +27,51 @@ interface Merchant {
   status?: 'pending' | 'approved' | 'rejected';
   totalOrdersCreated?: number;
   totalOrdersPaid?: number;
+  totalOrders?: Order[];
   totalShareAmount?: number;
   totalFeesGenerated?: number;
   actuallyReceivedFromPayouts?: number;
   pendingAmountToBeReceived?: number;
   contractAddress?: string;
   collectionId?: string;
+  totalOrdersCount?: number;
+  totalAmount?: number;
+  totalPaidAmount?: number;
+}
+
+interface CartItem {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  quantity: number;
 }
 
 interface Order {
   id: string;
-  merchantId: string;
-  amount: string;
+  crossmintId: string;
+  wooId: string;
+  storeUrl: string;
   status: string;
+  crossmintStatus: string;
+  transactionHash: string | null;
+  customerEmail: string | null;
+  customerWallet: string | null;
   createdAt: string;
-  paidAt?: string;
+  updatedAt: string;
+  completedAt: string | null;
+  metadata: {
+    source: string;
+    cartData: CartItem[];
+  };
+  merchant: {
+    id: number;
+    businessName: string;
+    contactInformation: string;
+    businessAddress: string;
+    receivingAddress: string;
+    storeUrl: string;
+  };
 }
 
 interface AnalyticsData {
@@ -92,7 +122,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, token, adminD
   const [webhookLogs, setWebhookLogs] = useState<WebhookLog[]>([]);
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
-  const [orders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [selectedMerchantId, setSelectedMerchantId] = useState<string | null>(null);
   const [loading] = useState(false);
   const [newAdminEmail, setNewAdminEmail] = useState('');
@@ -162,6 +192,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, token, adminD
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
+  // Helper function to calculate cart total
+  const calculateCartTotal = (cartData: CartItem[]): number => {
+    if (!cartData || !Array.isArray(cartData)) return 0;
+    return cartData.reduce((total, item) => {
+      return total + (item.price * item.quantity);
+    }, 0);
+  };
+
   // Fetch analytics data
   const fetchAnalytics = async () => {
     try {
@@ -182,11 +220,45 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, token, adminD
         
         // Update merchants with analytics data
         if (data.merchants && data.merchants.merchants) {
-          const merchantsWithMappedFields = data.merchants.merchants.map((merchant: any) => ({
-            ...merchant,
-            storeUrl: merchant.storeURL || merchant.storeUrl || 'N/A'
-          }));
+          const merchantsWithMappedFields = data.merchants.merchants.map((merchant: any) => {
+            // Extract orders from totalOrders object/array
+            const ordersArray = Array.isArray(merchant.totalOrders) 
+              ? merchant.totalOrders 
+              : (merchant.totalOrders ? Object.values(merchant.totalOrders) : []);
+            
+            // Calculate totals
+            const totalOrdersCount = ordersArray.length;
+            const totalAmount = ordersArray.reduce((sum: number, order: Order) => {
+              const cartTotal = calculateCartTotal(order.metadata?.cartData || []);
+              return sum + cartTotal;
+            }, 0);
+            
+            const totalPaidAmount = ordersArray
+              .filter((order: Order) => order.status === 'completed' || order.crossmintStatus === 'completed')
+              .reduce((sum: number, order: Order) => {
+                const cartTotal = calculateCartTotal(order.metadata?.cartData || []);
+                return sum + cartTotal;
+              }, 0);
+
+            return {
+              ...merchant,
+              storeUrl: merchant.storeURL || merchant.storeUrl || 'N/A',
+              totalOrders: ordersArray,
+              totalOrdersCount,
+              totalAmount,
+              totalPaidAmount
+            };
+          });
           setMerchants(merchantsWithMappedFields);
+          
+          // Extract all orders from all merchants
+          const allOrders: Order[] = [];
+          merchantsWithMappedFields.forEach((merchant: Merchant) => {
+            if (merchant.totalOrders && Array.isArray(merchant.totalOrders)) {
+              allOrders.push(...merchant.totalOrders);
+            }
+          });
+          setOrders(allOrders);
         }
       } else {
         console.error('Failed to fetch analytics:', response.status);
@@ -530,7 +602,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, token, adminD
                             <th>Business Name</th>
                             <th>Store URL</th>
                             <th>Receiving Address</th>
-                            <th>Total Paid Orders Amount</th>
+                            <th>Total Orders</th>
+                            <th>Total Amount</th>
+                            <th>Total Paid Amount</th>
                             <th>Fees Collected</th>
                             <th>Remaining to Distribute</th>
                             <th>Action</th>
@@ -538,7 +612,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, token, adminD
                         </thead>
                         <tbody>
                           {merchants.length === 0 ? (
-                            <EmptyState message="No approved merchants" colSpan={8} />
+                            <EmptyState message="No approved merchants" colSpan={10} />
                           ) : (
                             merchants.map((merchant) => (
                               <tr key={merchant.id}>
@@ -554,7 +628,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, token, adminD
                                   )}
                                 </td>
                                 <td className="address-cell">{merchant.receivingAddress}</td>
-                                <td>${merchant.totalShareAmount || 0}</td>
+                                <td>{merchant.totalOrdersCount || 0}</td>
+                                <td>${(merchant.totalAmount || 0).toFixed(2)}</td>
+                                <td>${(merchant.totalPaidAmount || 0).toFixed(2)}</td>
                                 <td>${merchant.totalFeesGenerated || 0}</td>
                                 <td>${merchant.pendingAmountToBeReceived || 0}</td>
                                 <td>
@@ -604,32 +680,63 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, token, adminD
                       <thead>
                         <tr>
                           <th>Order ID</th>
-                          <th>Merchant ID</th>
+                          <th>WooCommerce ID</th>
+                          <th>Business Name</th>
+                          <th>Store URL</th>
                           <th>Amount</th>
                           <th>Status</th>
+                          <th>Crossmint Status</th>
+                          <th>Transaction Hash</th>
+                          <th>Customer Email</th>
                           <th>Created At</th>
-                          <th>Paid At</th>
+                          <th>Completed At</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {orders.length === 0 ? (
-                          <EmptyState message="No orders found" colSpan={6} />
-                        ) : (
-                          orders.map((order) => (
-                            <tr key={order.id}>
-                              <td>{order.id}</td>
-                              <td>{order.merchantId}</td>
-                              <td>${order.amount}</td>
-                              <td>
-                                <span className={`status-badge ${order.status.toLowerCase()}`}>
-                                  {order.status}
-                                </span>
-                              </td>
-                              <td>{formatDate(order.createdAt)}</td>
-                              <td>{order.paidAt ? formatDate(order.paidAt) : 'N/A'}</td>
-                            </tr>
-                          ))
-                        )}
+                        {(() => {
+                          const displayOrders = selectedMerchantId
+                            ? orders.filter(order => order.merchant.id.toString() === selectedMerchantId)
+                            : orders;
+                          
+                          return displayOrders.length === 0 ? (
+                            <EmptyState message="No orders found" colSpan={11} />
+                          ) : (
+                            displayOrders.map((order) => {
+                              const cartTotal = calculateCartTotal(order.metadata?.cartData || []);
+                              return (
+                                <tr key={order.id}>
+                                  <td>{order.id}</td>
+                                  <td>{order.wooId}</td>
+                                  <td>{order.merchant.businessName}</td>
+                                  <td className="url-cell">
+                                    {order.storeUrl !== 'N/A' ? (
+                                      <a href={order.storeUrl} target="_blank" rel="noopener noreferrer" className="store-link">
+                                        {order.storeUrl}
+                                      </a>
+                                    ) : (
+                                      order.storeUrl
+                                    )}
+                                  </td>
+                                  <td>${cartTotal.toFixed(2)}</td>
+                                  <td>
+                                    <span className={`status-badge ${order.status.toLowerCase()}`}>
+                                      {order.status}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span className={`status-badge ${order.crossmintStatus.toLowerCase()}`}>
+                                      {order.crossmintStatus}
+                                    </span>
+                                  </td>
+                                  <td className="address-cell">{order.transactionHash || 'N/A'}</td>
+                                  <td>{order.customerEmail || 'N/A'}</td>
+                                  <td>{formatDate(order.createdAt)}</td>
+                                  <td>{order.completedAt ? formatDate(order.completedAt) : 'N/A'}</td>
+                                </tr>
+                              );
+                            })
+                          );
+                        })()}
                       </tbody>
                     </table>
                   </div>
@@ -653,6 +760,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, token, adminD
                       
                       {/* Platform Analytics Cards */}
                       {analytics?.platform ? (
+                        <>
                         <div className="analytics-cards">
                       <div className="analytics-card">
                         <div className="card-label">Vault Address</div>
@@ -671,6 +779,39 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, token, adminD
                         <div className="card-value">${analytics.platform.totalPendingPaymentFromDailyDistribution}</div>
                       </div>
                     </div>
+                    
+                    {/* Orders Summary */}
+                    <div className="section-divider">
+                      <h3>Orders Summary</h3>
+                    </div>
+                    <div className="analytics-cards">
+                      <div className="analytics-card">
+                        <div className="card-label">Total Orders</div>
+                        <div className="card-value">
+                          {merchants.reduce((sum, merchant) => sum + (merchant.totalOrdersCount || 0), 0)}
+                        </div>
+                      </div>
+                      <div className="analytics-card">
+                        <div className="card-label">Total Order Amount</div>
+                        <div className="card-value">
+                          ${merchants.reduce((sum, merchant) => sum + (merchant.totalAmount || 0), 0).toFixed(2)}
+                        </div>
+                      </div>
+                      <div className="analytics-card">
+                        <div className="card-label">Total Paid Amount</div>
+                        <div className="card-value">
+                          ${merchants.reduce((sum, merchant) => sum + (merchant.totalPaidAmount || 0), 0).toFixed(2)}
+                        </div>
+                      </div>
+                      <div className="analytics-card">
+                        <div className="card-label">Pending Payment</div>
+                        <div className="card-value">
+                          ${(merchants.reduce((sum, merchant) => sum + (merchant.totalAmount || 0), 0) - 
+                             merchants.reduce((sum, merchant) => sum + (merchant.totalPaidAmount || 0), 0)).toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                    </>
                       ) : (
                         <div className="empty-state-message">
                           No platform analytics data available
