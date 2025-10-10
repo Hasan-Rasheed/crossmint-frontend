@@ -16,24 +16,24 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
     field3: string;
     field4: string;
     field5: string;
-    image: File | null;
+    // image: File | null;
   }>({
     field1: "",
     field2: "",
     field3: "",
     field4: "",
     field5: "",
-    image: null,
+    // image: null,
   });
 
   const [loading, setLoading] = useState(false); 
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setFormData({ ...formData, image: file });
-    }
-  };
+  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files && e.target.files[0]) {
+  //     const file = e.target.files[0];
+  //     setFormData({ ...formData, image: file });
+  //   }
+  // };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -56,9 +56,9 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
       data.append("receivingAddress", formData.field4);
       data.append("storeUrl", formData.field5);
 
-      if (formData.image) {
-        data.append("file", formData.image); // Key must match NestJS FileInterceptor
-      }
+      // if (formData.image) {
+      //   data.append("file", formData.image); // Key must match NestJS FileInterceptor
+      // }
 
       // Send to backend
       const response = await fetch(API_ENDPOINTS.MERCHANTS_CREATE, {
@@ -82,7 +82,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
         field3: "",
         field4: "",
         field5: "",
-        image: null,
+        // image: null,
       });
       onClose(); // Close modal if applicable
       setLoading(false);
@@ -157,7 +157,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
 
 
 
-          <div className="input-group">
+          {/* <div className="input-group">
             <label htmlFor="imageUpload">Upload Image:</label>
             <input
               id="imageUpload"
@@ -167,7 +167,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
               accept="image/*"
               onChange={handleImageChange}
             />
-          </div>
+          </div> */}
 
     
           <div className="actions">

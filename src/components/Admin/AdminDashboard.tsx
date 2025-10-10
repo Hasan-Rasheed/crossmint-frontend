@@ -234,7 +234,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, token, adminD
             }, 0);
             
             const totalPaidAmount = ordersArray
-              .filter((order: Order) => order.status === 'completed' || order.crossmintStatus === 'completed')
+              .filter((order: Order) => order.status === 'paid' || order.crossmintStatus === 'paid')
               .reduce((sum: number, order: Order) => {
                 const cartTotal = calculateCartTotal(order.metadata?.cartData || []);
                 return sum + cartTotal;
