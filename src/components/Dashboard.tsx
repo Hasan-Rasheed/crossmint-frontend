@@ -56,6 +56,12 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
       data.append("receivingAddress", formData.field4);
       data.append("storeUrl", formData.field5);
 
+    if(formData.field4.length != 42) {
+      console.log('faile')
+      alert("Invalid wallet address");
+      setLoading(false);
+      return;
+    }
       // if (formData.image) {
       //   data.append("file", formData.image); // Key must match NestJS FileInterceptor
       // }
@@ -127,7 +133,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
             <input
               type="email"
               name="field3"
-              placeholder="Contact email"
+              placeholder="Email"
               value={formData.field3}
               onChange={handleChange}
               required

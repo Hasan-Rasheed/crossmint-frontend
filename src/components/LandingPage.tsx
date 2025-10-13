@@ -3,27 +3,29 @@ import './LandingPage.css';
 
 interface LandingPageProps {
   onSignupClick: () => void;
+  handleLoginClick: () => void;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ onSignupClick }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ onSignupClick, handleLoginClick }) => {
   return (
     <div className="landing-container">
       {/* Navigation Header */}
       <nav className="navbar">
-        <div className="nav-content">
+        <div className="nav-content"> 
           <div className="logo">
             <span className="logo-icon">🔒</span>
             <span className="logo-text">CloakPay</span>
           </div>
           <div className="nav-links">
             <a href="#features">Features</a>
+            <button className='cta-button small' onClick={handleLoginClick}>Login</button>
             {/* <a href="#pricing">Pricing</a>
             <a href="#contact">Contact</a> */}
           </div>
         </div>
-      </nav>
+      </nav> 
 
-      {/* Hero Section */}
+      {/* Hero Section */} 
       <section className="hero">
         <div className="hero-content">
           <div className="hero-text">
