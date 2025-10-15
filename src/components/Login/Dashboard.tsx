@@ -5,6 +5,7 @@ import {
   createAuthHeaders,
   ADMIN_SECRET_KEY,
 } from "../../config/api";
+import { FaPencilAlt } from "react-icons/fa";
 
 interface CartItem {
   id: number;
@@ -88,7 +89,7 @@ interface AnalyticsData {
 const UserDashboard = () => {
   const params = new URLSearchParams(window.location.search);
   const token = localStorage.getItem("userToken") || "";
-  
+
   const [activeTab, setActiveTab] = useState<
     "profile" | "orders" | "settings" | "analytics"
   >("profile");
@@ -103,6 +104,7 @@ const UserDashboard = () => {
   const [selectedMerchantId, setSelectedMerchantId] = useState<string | null>(
     null
   );
+  const [selectedStoreUrl, setSelectedStoreUrl] = useState();
   const [loading] = useState(false);
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [newAdminName, setNewAdminName] = useState("");
@@ -315,7 +317,7 @@ const UserDashboard = () => {
     console.log("merchant store", merchantStore);
 
     setNewStoreUrl(merchantStore.storeUrl);
-    setNewReceivingAddress(merchantStore.receivingAddress)
+    setNewReceivingAddress(merchantStore.receivingAddress);
 
     setShowEditStoreModal(true);
     setEditModalStore(merchantStore);
@@ -344,12 +346,23 @@ const UserDashboard = () => {
     const data = await response.json();
     console.log("✅ Store updated:", data);
 
-    await findMerchant()
-    alert('success')
-    setShowEditStoreModal(false)
-    setNewStoreUrl('')
-    setNewReceivingAddress('')
+    await findMerchant();
+    alert("success");
+    setShowEditStoreModal(false);
+    setNewStoreUrl("");
+    setNewReceivingAddress("");
   };
+
+  console.log("merchant", merchant);
+  // const filteredOrders = merchant && merchant.orders && selectedStoreUrl
+  //   ? merchant?.orders.filter((order: any) => order.storeUrl === selectedStoreUrl)
+  //   : merchant.orders;
+
+  const filteredOrders = selectedStoreUrl
+    ? merchant?.orders?.filter(
+        (order: any) => order.storeUrl === selectedStoreUrl
+      ) || []
+    : merchant?.orders || [];
 
   return (
     <div className="admin-dashboard">
@@ -409,7 +422,7 @@ const UserDashboard = () => {
         {activeTab === "profile" && (
           <div className="tab-content">
             <div className="content-header">
-              <h2>Merchant Management</h2>
+              <h2>Profile</h2>
             </div>
 
             {/* Merchant Sub-tabs */}
@@ -503,7 +516,6 @@ const UserDashboard = () => {
                 <table className="admin-table">
                   <thead>
                     <tr>
-                      <th>Edit</th>
                       <th>Merchant Name</th>
                       <th>Business Name</th>
                       <th>Store URL</th>
@@ -513,6 +525,7 @@ const UserDashboard = () => {
                       <th>Total Paid Amount</th>
                       <th>Fees Collected</th>
                       <th>Remaining to Distribute</th>
+                      <th>Edit</th>
                       <th>Action</th>
                     </tr>
                   </thead>
@@ -521,13 +534,6 @@ const UserDashboard = () => {
                       (merchantStore: any, index: number) => {
                         return (
                           <tr key={merchant.id}>
-                            <th
-                              onClick={() => {
-                                handleStoreEdit(merchantStore);
-                              }}
-                            >
-                              Edit icon
-                            </th>
                             <td>{merchant?.contactInformation || "N/A"}</td>
                             <td>{merchant?.businessName}</td>
                             <td className="url-cell">
@@ -554,11 +560,29 @@ const UserDashboard = () => {
                             </td>
                             <td>${merchant.totalFeesGenerated || 0}</td>
                             <td>${merchant.pendingAmountToBeReceived || 0}</td>
+                            <td
+                              className="edit-cell"
+                              onClick={() => {
+                                handleStoreEdit(merchantStore);
+                              }}
+                            >
+                              <FaPencilAlt className="edit-icon" />
+                            </td>
+
                             <td>
+                              {/* <th
+                              onClick={() => {
+                                handleStoreEdit(merchantStore);
+                              }}
+                            >
+                              Edit icon
+                            </th> */}
                               <button
                                 className="view-orders-btn"
                                 onClick={() => {
-                                  setSelectedMerchantId(merchant.id);
+                                  setSelectedStoreUrl(merchantStore.storeUrl);
+                                  console.log("merchant store", merchantStore);
+                                  // setSelectedMerchantId(merchant.id);
                                   setActiveTab("orders");
                                 }}
                               >
@@ -582,6 +606,7 @@ const UserDashboard = () => {
         {activeTab === "orders" && (
           <div className="tab-content">
             <div className="content-header">
+              <h2>Orders</h2>
               {/* <h2>
                       {selectedMerchantId 
                         ? `Orders - ${merchants.find(m => m.id === selectedMerchantId)?.businessName || 'Merchant'}` 
@@ -617,58 +642,59 @@ const UserDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {merchant.orders.map((order: any) => {
-                    console.log("order", order);
-                    const cartTotal = calculateCartTotal(
-                      order.metadata?.cartData || []
-                    );
-                    return (
-                      <tr key={order.id}>
-                        <td>{order.id}</td>
-                        <td>{order.wooId}</td>
-                        <td>{merchant.businessName}</td>
-                        <td className="url-cell">
-                          {order.storeUrl !== "N/A" ? (
-                            <a
-                              href={order.storeUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="store-link"
+                  {filteredOrders.length > 0 &&
+                    filteredOrders.map((order: any) => {
+                      console.log("order", order);
+                      const cartTotal = calculateCartTotal(
+                        order.metadata?.cartData || []
+                      );
+                      return (
+                        <tr key={order.id}>
+                          <td>{order.id}</td>
+                          <td>{order.wooId}</td>
+                          <td>{merchant.businessName}</td>
+                          <td className="url-cell">
+                            {order.storeUrl !== "N/A" ? (
+                              <a
+                                href={order.storeUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="store-link"
+                              >
+                                {order.storeUrl}
+                              </a>
+                            ) : (
+                              order.storeUrl
+                            )}
+                          </td>
+                          <td>${cartTotal.toFixed(2)}</td>
+                          <td>
+                            <span
+                              className={`status-badge ${order.status.toLowerCase()}`}
                             >
-                              {order.storeUrl}
-                            </a>
-                          ) : (
-                            order.storeUrl
-                          )}
-                        </td>
-                        <td>${cartTotal.toFixed(2)}</td>
-                        <td>
-                          <span
-                            className={`status-badge ${order.status.toLowerCase()}`}
-                          >
-                            {order.status}
-                          </span>
-                        </td>
-                        <td>
-                          <span
-                            className={`status-badge ${order.crossmintStatus.toLowerCase()}`}
-                          >
-                            {order.crossmintStatus}
-                          </span>
-                        </td>
-                        <td className="address-cell">
-                          {order.transactionHash || "N/A"}
-                        </td>
-                        <td>{order.customerEmail || "N/A"}</td>
-                        <td>{formatDate(order.createdAt)}</td>
-                        <td>
-                          {order.completedAt
-                            ? formatDate(order.completedAt)
-                            : "N/A"}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                              {order.status}
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              className={`status-badge ${order.crossmintStatus.toLowerCase()}`}
+                            >
+                              {order.crossmintStatus}
+                            </span>
+                          </td>
+                          <td className="address-cell">
+                            {order.transactionHash || "N/A"}
+                          </td>
+                          <td>{order.customerEmail || "N/A"}</td>
+                          <td>{formatDate(order.createdAt)}</td>
+                          <td>
+                            {order.completedAt
+                              ? formatDate(order.completedAt)
+                              : "N/A"}
+                          </td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             </div>
@@ -677,7 +703,9 @@ const UserDashboard = () => {
 
         {activeTab === "settings" && (
           <div className="tab-content">
-            <div className="content-header"></div>
+            <div className="content-header">
+              <h2>Settings</h2>
+            </div>
             <div className="table-container">
               <table className="admin-table">
                 <thead>
@@ -1007,8 +1035,8 @@ const UserDashboard = () => {
                 className="modal-close-btn"
                 onClick={() => {
                   setShowAddStoreModal(false);
-                  setNewStoreUrl('')
-                  setNewReceivingAddress('')
+                  setNewStoreUrl("");
+                  setNewReceivingAddress("");
                 }}
               >
                 ✕
