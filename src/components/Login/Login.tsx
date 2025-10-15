@@ -3,6 +3,7 @@ import Loader from "../../common/Loader/Loader";
 
 import "../Dashboard.css";
 import { API_ENDPOINTS, createHeaders } from "../../config/api";
+import { useNavigate } from "react-router-dom";
 
 interface LoginFormProps {
   isOpen: boolean;
@@ -11,6 +12,8 @@ interface LoginFormProps {
 
 const LoginForm: React.FC<LoginFormProps> = ({ isOpen, onClose }) => {
   console.log("props", isOpen, onClose);
+
+  const navigate = useNavigate();
 
   // const storedToken = localStorage.getItem("userToken");
   // const storedAdminData = localStorage.getItem("userData");
@@ -22,6 +25,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ isOpen, onClose }) => {
   const [successMessage, setSuccessMessage] = useState("");
   const [step, setStep] = useState<"email" | "otp">("email");
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [adminData, setAdminData] = useState(null);
+
   // if (!isOpen) return null;
   const storedToken = localStorage.getItem("userToken") || "";
   const storedAdminData = localStorage.getItem("userData") || "";
@@ -32,6 +39,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ isOpen, onClose }) => {
       alert("session exist redirect");
     }
   }, []);
+
+  const onLogin = (token: string, adminData: any) => {
+    console.log("LoginForm - onLogin called");
+    console.log("Token:", token);
+    console.log("Admin Data:", adminData);
+    // You can perform additional actions here if needed
+
+    setToken(token);
+    setAdminData(adminData);
+    setIsAuthenticated(true);
+  };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,6 +80,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ isOpen, onClose }) => {
       setLoading(false);
     }
   };
+  
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +114,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ isOpen, onClose }) => {
 
         // Call onLogin callback with token and admin data
         console.log("Calling onLogin callback...");
-        // onLogin(data.data.token, data.data.admin);
+        onLogin(data.data.token, data.data.admin);
+        console.log("redirect kkro");
+        navigate("/user");
+        // onClose();
+
+        // window.location.href = 'http://localhost:5174';
+        // window.location.href = `http://localhost:5174?token=${encodeURIComponent(data.data.token)}`;
+      
+
       } else {
         console.error("OTP Verification Failed:", data);
         setError(data.message || "Invalid OTP. Please try again.");
@@ -108,92 +135,116 @@ const LoginForm: React.FC<LoginFormProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  console.log("params", { isAuthenticated, token, isOpen });
+
   return (
     <>
-      {isOpen && (
-        <div className="modal-overlay" onClick={onClose}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-btn" onClick={onClose}>
-              ✕
-            </button>
-            <h2>Login</h2>
-            {step == "email" && (
-              <form onSubmit={handleEmailSubmit}>
-                <div>
-                  <div className="input-group">
+      {/* {isAuthenticated && token ? (
+        <UserDashboard />
+      ) : ( */}
+      <div>
+        {isOpen && (
+          <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <button className="close-btn" onClick={onClose}>
+                ✕
+              </button>
+              <h2>Login</h2>
+              {step == "email" && (
+                <form onSubmit={handleEmailSubmit}>
+                  <div>
+                    <div className="input-group">
+                      <input
+                        type="text"
+                        name="field1"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="actions">
+                      <button
+                        type="button"
+                        className="cancel"
+                        onClick={onClose}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="submit"
+                        disabled={loading}
+                      >
+                        {loading ? <Loader /> : "Send OTP"}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              )}
+
+              {step === "otp" && (
+                <form onSubmit={handleOtpSubmit} className="admin-login-form">
+                  {successMessage && !error && (
+                    <div className="success-message">{successMessage}</div>
+                  )}
+                  {error && <div className="error-message">{error}</div>}
+
+                  <div className="form-group">
+                    <label htmlFor="otp">Enter OTP</label>
                     <input
                       type="text"
-                      name="field1"
-                      placeholder="Email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      id="otp"
+                      name="otp"
+                      value={otp}
+                      onChange={(e) =>
+                        setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+                      }
+                      placeholder="123456"
                       required
+                      disabled={loading}
+                      maxLength={6}
+                      className="otp-input"
                     />
                   </div>
 
-                  <div className="actions">
-                    <button type="button" className="cancel" onClick={onClose}>
-                      Cancel
-                    </button>
-                    <button type="submit" className="submit" disabled={loading}>
-                      {loading ? <Loader /> : "Send OTP"}
+                  <button
+                    type="submit"
+                    className="admin-login-btn"
+                    disabled={loading || otp.length !== 6}
+                  >
+                    {loading ? "Verifying..." : "Verify OTP"}
+                  </button>
+
+                  <div className="resend-container">
+                    <span className="resend-text">
+                      Didn't receive the code?{" "}
+                    </span>
+                    <button
+                      type="button"
+                      className="resend-link"
+                      // onClick={handleResendOtp}
+                      disabled={loading}
+                    >
+                      Resend OTP
                     </button>
                   </div>
-                </div>
-              </form>
-            )}
-
-            {step === "otp" && (
-              <form onSubmit={handleOtpSubmit} className="admin-login-form">
-                {successMessage && !error && (
-                  <div className="success-message">{successMessage}</div>
-                )}
-                {error && <div className="error-message">{error}</div>}
-
-                <div className="form-group">
-                  <label htmlFor="otp">Enter OTP</label>
-                  <input
-                    type="text"
-                    id="otp"
-                    name="otp"
-                    value={otp}
-                    onChange={(e) =>
-                      setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
-                    }
-                    placeholder="123456"
-                    required
-                    disabled={loading}
-                    maxLength={6}
-                    className="otp-input"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="admin-login-btn"
-                  disabled={loading || otp.length !== 6}
-                >
-                  {loading ? "Verifying..." : "Verify OTP"}
-                </button>
-
-                <div className="resend-container">
-                  <span className="resend-text">Didn't receive the code? </span>
-                  <button
-                    type="button"
-                    className="resend-link"
-                    // onClick={handleResendOtp}
-                    disabled={loading}
-                  >
-                    Resend OTP
-                  </button>
-                </div>
-              </form>
-            )}
+                </form>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+      {/* )} */}
     </>
   );
 };
 
 export default LoginForm;
+
+
+
+// same app
+// handle multiple store urls
+// merchant tab k end pai "view orders" ka button lgana hai and uske click pai orders pai redirect krna but store specific

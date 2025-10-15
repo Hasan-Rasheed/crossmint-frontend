@@ -21,6 +21,7 @@ export const API_ENDPOINTS = {
   // Merchant
   MERCHANTS_CREATE: `${API_BASE_URL}/merchants`,
   MERCHANTS_GET_ALL: `${API_BASE_URL}/merchants/getAll`,
+  MERCHANTS_GET_SINGLE: `${API_BASE_URL}/merchants`,
 };
 
 /**

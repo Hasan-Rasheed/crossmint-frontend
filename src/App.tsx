@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard'
 import LandingPage from './components/LandingPage'
 import AdminPanel from './components/Admin/AdminPanel'
 import LoginForm from './components/Login/Login'
+import UserDashboard from './components/Login/Dashboard'
 
 function App() {
   const [showMerchantForm, setShowMerchantForm] = useState(false)
@@ -40,6 +41,8 @@ function App() {
           }
         />
         <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/user" element={<UserDashboard />} />
+
       </Routes>
     </Router>
   )

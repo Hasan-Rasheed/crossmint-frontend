@@ -45,7 +45,7 @@ const AdminPanel: React.FC = () => {
     
     // Reset state
     setToken(null);
-    setAdminData(null);
+    setAdminData(null); 
     setIsAuthenticated(false);
   };
 
