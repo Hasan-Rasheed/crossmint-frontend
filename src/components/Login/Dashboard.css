@@ -1,9 +1,10 @@
  .admin-dashboard {
-  min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* Header Bar */
@@ -19,6 +20,9 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   height: 70px;
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .header-left {
@@ -69,6 +73,7 @@
   overflow: hidden;
   width: 100%;
   max-width: 100%;
+  height: calc(100vh - 70px);
 }
 
 /* Sidebar Navigation */
@@ -81,6 +86,7 @@
   padding: 2rem 0;
   flex-shrink: 0;
   overflow-y: auto;
+  height: 100%;
 }
 
 .sidebar-nav {
@@ -126,31 +132,45 @@
 /* Content Area */
 .admin-content {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 0;
-  width: 100%;
-  max-width: 100%;
+  width: calc(100% - 280px);
+  max-width: calc(100% - 280px);
+  height: 100%;
+  min-height: 0; /* allow child flex items to scroll */
 }
 
 .tab-content {
   background: white;
   width: 100%;
-  min-width: 100%;
-  max-width: 100%;
-  min-height: 100%;
+  height: 100%;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* no tab-level scroll */
+  padding: 0 2rem 2rem; /* equal side padding, bottom spacing */
+  min-height: 0; /* enable table container scrolling */
+}
+
+/* Inner width constraint for all tab content */
+.tab-inner {
+  width: 78%;
+  max-width: 78%; /* keep content centered and bounded */
+  /* margin: 0 auto; center horizontally */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .content-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 2rem 3rem;
+  padding: 1.5rem 0; /* rely on tab-content side padding */
   border-bottom: 1px solid rgba(226, 232, 240, 0.5);
   background: transparent;
   flex-shrink: 0;
+  min-height: 90px;
 }
 
 .content-header h2 {
@@ -166,7 +186,7 @@
 /* Merchant Sub-tabs */
 .merchant-sub-tabs {
   display: flex;
-  padding: 0 3rem;
+  padding: 0; /* inherit from tab-content */
   border-bottom: 1px solid #e2e8f0;
   background: #f8fafc;
 }
@@ -196,22 +216,53 @@
 
 /* Table Styles */
 .table-container {
-  overflow-x: auto;
+  overflow: auto; /* scroll only inside the table when needed */
   padding: 0;
-  margin: 0;
+  margin: 1.5rem 0 0; /* align with header, no extra side margin */
   width: 100%;
-  min-width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  flex: 1;
-  min-height: 400px;
+  flex: 1; /* occupy remaining space under header */
   text-align: center;
+  height: auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+}
+
+/* Custom Scrollbar Styling */
+.table-container::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: 10px;
+  border: 2px solid #f1f5f9;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+/* Firefox */
+.table-container {
+  scrollbar-width: thin;
+  scrollbar-color: #6366f1 #f1f5f9;
 }
 
 .admin-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
+  /* table-layout: fixed; prevent overflow, keep within container */
 }
 
 .admin-table thead {
@@ -222,7 +273,7 @@
 }
 
 .admin-table th {
-  padding: 1.125rem 1.5rem;
+  padding: 1rem 1rem;
   /* text-align: left; */
   font-weight: 600;
   color: #475569;
@@ -232,13 +283,18 @@
   font-size: 0.75rem;
   letter-spacing: 0.5px;
   background: #f8fafc;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .admin-table td {
-  padding: 1.125rem 1.5rem;
+  padding: 1rem 1rem;
   border-bottom: 1px solid #f1f5f9;
   color: #334155;
   font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .admin-table tbody tr {
@@ -370,8 +426,10 @@
 
 /* Settings */
 .settings-content {
-  padding: 2rem 3rem;
+  padding: 2rem;
   text-align: left;
+  overflow-y: auto;
+  height: calc(100% - 90px);
 }
 
 .settings-section {
@@ -486,12 +544,19 @@
   color: white;
 }
 
+/* Analytics Scroll Wrapper */
+.analytics-scroll-wrapper {
+  overflow-y: auto;
+  flex: 1;
+  height: calc(100% - 90px);
+}
+
 /* Analytics Cards */
 .analytics-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
-  padding: 2rem 3rem;
+  padding: 2rem;
 }
 
 .analytics-card {
@@ -528,7 +593,7 @@
 }
 
 .section-divider {
-  padding: 1.5rem 3rem 0.5rem;
+  padding: 1.5rem 2rem 0.5rem;
   border-top: 1px solid #e2e8f0;
   margin-top: 1rem;
 }
@@ -734,6 +799,24 @@
   background: #f8fafc !important;
 }
 
+.no-data-message {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #64748b;
+  font-size: 1.125rem;
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.no-data-message::before {
+  content: "📦";
+  font-size: 3rem;
+  opacity: 0.5;
+}
+
 .empty-state-message {
   text-align: center;
   padding: 3rem 2rem;
@@ -774,13 +857,24 @@
 
   .admin-main-layout {
     flex-direction: column;
+    height: calc(100vh - 60px);
   }
 
   .admin-sidebar {
     width: 100%;
+    height: auto;
     padding: 1rem 0;
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  
+  .admin-content {
+    width: 100%;
+    max-width: 100%;
+    flex: 1;
+    overflow-y: auto;
   }
 
   .sidebar-nav {
@@ -822,7 +916,9 @@
 
   .table-container {
     padding: 0;
-    width: 100%;
+    width: calc(100% - 2rem);
+    margin: 1rem;
+    height: auto;
   }
 
   .admin-table {

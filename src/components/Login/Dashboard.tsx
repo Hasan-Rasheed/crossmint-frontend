@@ -421,26 +421,16 @@ const UserDashboard = () => {
         {/* Debug: merchant here */}
         {activeTab === "profile" && (
           <div className="tab-content">
-            <div className="content-header">
-              <h2>Profile</h2>
-            </div>
-
-            {/* Merchant Sub-tabs */}
-            <div className="merchant-sub-tabs">
-              <button
-                // className={`sub-tab ${merchantSubTab === 'pending' ? 'active' : ''}`}
-                // onClick={() => setMerchantSubTab('pending')}
-                onClick={() => setShowAddStoreModal(true)}
-              >
-                Add store
-              </button>
-              {/* <button
-                      className={`sub-tab ${merchantSubTab === 'approved' ? 'active' : ''}`}
-                      // onClick={() => setMerchantSubTab('approved')}
-                    >
-                      Approved Merchants
-                    </button> */}
-            </div>
+            <div className="tab-inner">
+              <div className="content-header">
+                <h2>Profile</h2>
+                <button
+                  className="add-admin-header-btn"
+                  onClick={() => setShowAddStoreModal(true)}
+                >
+                  + Add store
+                </button>
+              </div>
 
             {/* Pending Merchants */}
             {/* {merchantSubTab === "pending" && (
@@ -511,35 +501,35 @@ const UserDashboard = () => {
             )} */}
 
             {/* Approved Merchants */}
-            {merchant && (
-              <div className="table-container">
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>Merchant Name</th>
-                      <th>Business Name</th>
-                      <th>Store URL</th>
-                      <th>Receiving Address</th>
-                      <th>Total Orders</th>
-                      <th>Total Amount</th>
-                      <th>Total Paid Amount</th>
-                      <th>Fees Collected</th>
-                      <th>Remaining to Distribute</th>
-                      <th>Edit</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {merchant.stores.map(
+            <div className="table-container">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Merchant Name</th>
+                    <th>Business Name</th>
+                    <th>Store URL</th>
+                    <th>Receiving Address</th>
+                    <th>Total Orders</th>
+                    <th>Total Amount</th>
+                    <th>Total Paid Amount</th>
+                    <th>Fees Collected</th>
+                    <th>Remaining to Distribute</th>
+                    <th>Edit</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {merchant && merchant.stores && merchant.stores.length > 0 ? (
+                    merchant.stores.map(
                       (merchantStore: any, index: number) => {
                         return (
-                          <tr key={merchant.id}>
+                          <tr key={`${merchant.id}-${index}`}>
                             <td>{merchant?.contactInformation || "N/A"}</td>
                             <td>{merchant?.businessName}</td>
                             <td className="url-cell">
                               {merchantStore !== "N/A" ? (
                                 <a
-                                  href={merchantStore}
+                                  href={merchantStore.storeUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="store-link"
@@ -570,19 +560,11 @@ const UserDashboard = () => {
                             </td>
 
                             <td>
-                              {/* <th
-                              onClick={() => {
-                                handleStoreEdit(merchantStore);
-                              }}
-                            >
-                              Edit icon
-                            </th> */}
                               <button
                                 className="view-orders-btn"
                                 onClick={() => {
                                   setSelectedStoreUrl(merchantStore.storeUrl);
                                   console.log("merchant store", merchantStore);
-                                  // setSelectedMerchantId(merchant.id);
                                   setActiveTab("orders");
                                 }}
                               >
@@ -592,21 +574,26 @@ const UserDashboard = () => {
                           </tr>
                         );
                       }
-                    )}
-
-                    {/* ))
-                          )} */}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    )
+                  ) : (
+                    <tr>
+                      <td colSpan={11} className="empty-state">
+                        No data available
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            </div>
           </div>
         )}
 
         {activeTab === "orders" && (
           <div className="tab-content">
-            <div className="content-header">
-              <h2>Orders</h2>
+            <div className="tab-inner">
+              <div className="content-header">
+                <h2>Orders</h2>
               {/* <h2>
                       {selectedMerchantId 
                         ? `Orders - ${merchants.find(m => m.id === selectedMerchantId)?.businessName || 'Merchant'}` 
@@ -623,8 +610,8 @@ const UserDashboard = () => {
                         ← Back to Merchants
                       </button>
                     )} */}
-            </div>
-            <div className="table-container">
+              </div>
+              <div className="table-container">
               <table className="admin-table">
                 <thead>
                   <tr>
@@ -642,7 +629,7 @@ const UserDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredOrders.length > 0 &&
+                  {filteredOrders && filteredOrders.length > 0 ? (
                     filteredOrders.map((order: any) => {
                       console.log("order", order);
                       const cartTotal = calculateCartTotal(
@@ -694,16 +681,26 @@ const UserDashboard = () => {
                           </td>
                         </tr>
                       );
-                    })}
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={11} className="empty-state">
+                        No orders available
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         )}
 
         {activeTab === "settings" && (
           <div className="tab-content">
+            <div className="tab-inner">
             <div className="content-header">
+
               <h2>Settings</h2>
             </div>
             <div className="table-container">
@@ -774,6 +771,7 @@ const UserDashboard = () => {
                 </tbody>
               </table>
             </div>
+            </div>
           </div>
         )}
 
@@ -786,11 +784,7 @@ const UserDashboard = () => {
             {!analytics ? (
               <div className="loading-state">Loading analytics data...</div>
             ) : (
-              <>
-                {console.log("Rendering Vaults - Analytics:", analytics)}
-                {console.log("Platform data:", analytics?.platform)}
-                {console.log("Distributions data:", analytics?.distributions)}
-
+              <div className="analytics-scroll-wrapper">
                 {/* Platform Analytics Cards */}
                 {analytics?.platform ? (
                   <>
@@ -961,7 +955,7 @@ const UserDashboard = () => {
                     No distribution data available
                   </div>
                 )}
-              </>
+              </div>
             )}
           </div>
         )}

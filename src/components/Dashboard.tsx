@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./Dashboard.css";
 import Loader from "../common/Loader/Loader";
 import { API_ENDPOINTS } from "../config/api";
+import { useNavigate } from "react-router-dom";
 
 interface DashboardProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState<{
     field1: string;
@@ -79,6 +81,12 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
       const result = await response.json();
       console.log("Response Data:", result);
 
+      // Store merchant credentials
+      if (result.data && result.data.token) {
+        localStorage.setItem("userToken", result.data.token);
+        localStorage.setItem("userData", JSON.stringify(result.data.merchant));
+      }
+
       alert("Form submitted successfully! Welcome to CloakPay!");
 
       // Reset form
@@ -92,6 +100,9 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose }) => {
       });
       onClose(); // Close modal if applicable
       setLoading(false);
+      
+      // Redirect to merchant dashboard
+      navigate("/user");
     } catch (error) {
       console.error("Error:", error);
       setLoading(false);
